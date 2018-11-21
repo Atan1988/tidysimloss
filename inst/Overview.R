@@ -4,7 +4,8 @@
 # {
 # total_claims ~ ,
 # occurrence_lag ~ ,
-# report_lag ~
+# report_lag ~ ,
+# ...
 # }
 #
 # 2. Severity Component:
