@@ -12,4 +12,9 @@ Policy_sim  <- function(N_Policies, Industries, Exposures ) {
     Industries = sample(Industries,  N_Policies, replace = T)
   ) %>%
   dplyr::mutate(Industries = factor(Industries, levels = !!Industries))
+
+  expr_evaluation(df = Policy_df, expr_alist = Exposures)
 }
+
+
+Policy_df <- Policy_sim(N_Policies, Industries, Exposures )
