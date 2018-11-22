@@ -17,8 +17,9 @@ Imports:
     tibble,
     purrr,
     dplyr,
+    lubridate,
     rlang,
-    lubridate
+    tidyr
 Suggests: 
     knitr,
     rmarkdown

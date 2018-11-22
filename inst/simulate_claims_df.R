@@ -1,7 +1,8 @@
 data('Policy_df')
 policy_required_field_map <- c('PolicyNo' = 'Policy_Number',
                                'EffectiveDate' = 'Eff_dt',
-                               'ExpirationDate' = 'Exp_dt')
+                               'ExpirationDate' = 'Exp_dt',
+                               'NumberOfClaims' = 'total_claims')
 frequency_alist <- alist(
   total_claims ~ rpois(lambda),
   lambda = a + b[Industries] * log(Exposures),

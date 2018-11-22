@@ -12,4 +12,6 @@ crt_tidysimloss  <- function(policy_df, policy_required_field_map,
                              frequency_alist, severity_init_components_alist,
                              severity_transit_components_alist, severity_params_components_alist) {
 
+  policy_df <- policy_df %>%
+    expr_evaluation(df = ., expr_alist = frequency_alist)
 }
