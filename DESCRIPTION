@@ -17,4 +17,5 @@ Imports:
     tibble,
     purrr,
     dplyr,
-    rlang
+    rlang,
+    lubridate
