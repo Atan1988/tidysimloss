@@ -2,7 +2,12 @@
 
 export("%>%")
 export(crt_tidysimloss)
+export(dtrunc)
 export(expr_evaluation)
 export(expr_parser)
+export(pseudo)
+export(ptrunc)
+export(qtrunc)
 export(rdiscrete)
+export(rtrunc)
 importFrom(magrittr,"%>%")

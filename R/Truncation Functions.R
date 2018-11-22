@@ -1,10 +1,22 @@
-### this is a pseudo p function, that is used when p function not available
+#' @title  seudo p function
+#' @name pseudo
+#' @description  this is a pseudo p function, that is used when p function not available
+#' @param Att attachment
+#' @param ... additional arguments
+#' @export
 pseudo <- function(Att, ...) {
   if (is.infinite(Att) & Att > 0) return(1) else return(0)
 }
 
 
 ### this module includes generic Truncated functions
+#' @title  trunc d function
+#' @name dtrunc
+#' @description  d truncation function
+#' @param Att attachment
+#' @param FUN distribution
+#' @param rTrunc right truncation
+#' @param ... additional arguments
 #' @export
 dtrunc <- function(x, FUN, Att=0, rTrunc=Inf, ...) {
   d <- get(paste("d", FUN, sep=""))
@@ -21,6 +33,14 @@ dtrunc <- function(x, FUN, Att=0, rTrunc=Inf, ...) {
   return(d(x, ...)/(Sd - Sr))
 }
 
+
+#' @title  trunc p function
+#' @name ptrunc
+#' @description  p truncation function
+#' @param Att attachment
+#' @param FUN distribution
+#' @param rTrunc right truncation
+#' @param ... additional arguments
 #' @export
 ptrunc <- function(x, FUN, Att=0, rTrunc=Inf, ...) {
   d <- get(paste("d", FUN, sep=""))
@@ -37,6 +57,13 @@ ptrunc <- function(x, FUN, Att=0, rTrunc=Inf, ...) {
   return(( p(x, ...) - p(Att, ...)) /(Sd - Sr))
 }
 
+#' @title  trunc q function
+#' @name qtrunc
+#' @description  q truncation function
+#' @param Att attachment
+#' @param FUN distribution
+#' @param rTrunc right truncation
+#' @param ... additional arguments
 #' @export
 qtrunc <- function(x, FUN, Att=0, rTrunc=Inf, ...) {
   d <- get(paste("d", FUN, sep=""))
@@ -55,6 +82,13 @@ qtrunc <- function(x, FUN, Att=0, rTrunc=Inf, ...) {
   return(q( x * (Sd - Sr) + (1 - Sd), ...))
 }
 
+#' @title  trunc r function
+#' @name rtrunc
+#' @description  r truncation function
+#' @param Att attachment
+#' @param FUN distribution
+#' @param rTrunc right truncation
+#' @param ... additional arguments
 #' @export
 rtrunc <- function(n, FUN, Att=0, rTrunc = Inf, ...) {
     if (length(Att)==1) {
