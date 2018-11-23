@@ -3,6 +3,7 @@
 export("%>%")
 export(crt_tidysimloss)
 export(dtrunc)
+export(eval_formula_exprs)
 export(expr_evaluation)
 export(expr_parser)
 export(pseudo)

@@ -21,5 +21,11 @@ crt_tidysimloss  <- function(policy_df, policy_required_field_map,
     purrr::map(~seq(1, ., 1)) %>%
     dplyr::mutate(policy_df_w_claims, ClaimNo = .) %>% tidyr::unnest() %>%
     dplyr::mutate(ClaimNo = paste(PolicyNo, ClaimNo, sep = '_')) %>%
-    dplyr::select(ClaimNo)
+    dplyr::select(PolicyNo, ClaimNo) %>%
+    dplyr::left_join(Policy_df, by = policy_required_field_map[1])
+
+
+  claims_df %>%
+    expr_evaluation(df = ., expr_alist = severity_init_components_alist)
+
 }

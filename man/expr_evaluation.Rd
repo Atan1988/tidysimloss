@@ -4,12 +4,14 @@
 \alias{expr_evaluation}
 \title{evalute parsed expressions}
 \usage{
-expr_evaluation(df, expr_alist)
+expr_evaluation(df, expr_alist, params_alist)
 }
 \arguments{
 \item{df}{data frame}
 
 \item{expr_alist}{an alist that contains expressions}
+
+\item{params_alist}{an alist that contains parameter distributions}
 }
 \description{
 evaluate parsed expressions
