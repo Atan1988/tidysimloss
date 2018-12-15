@@ -57,13 +57,15 @@ eval_formula_exprs <- function(df, data_list, formula_exprs) {
 #' @param params_alist an alist that contains parameter distributions
 #' @name expr_evaluation
 #' @export
-expr_evaluation <- function(df, expr_alist, params_alist) {
+expr_evaluation <- function(df, expr_alist, params_alist = NULL) {
   parsed_exprs <- expr_parser(expr_alist)
-  parsed_params_exprs <- expr_parser(params_alist)
   data_list <- append(list(df = df), parsed_exprs$scalar_exprs)
 
-  df <- eval_formula_exprs(df, data_list, formula_exprs = parsed_params_exprs$formula_exprs)
-  data_list$df <- df
+  if (length(params_alist) > 0) {
+    parsed_params_exprs <- expr_parser(params_alist)
+    df <- eval_formula_exprs(df, data_list, formula_exprs = parsed_params_exprs$formula_exprs)
+    data_list$df <- df
+  }
 
   if (length(parsed_exprs$equation_exprs) > 0) {
     equation_exprs <- parsed_exprs$equation_exprs %>% rev()

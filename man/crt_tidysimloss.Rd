@@ -5,8 +5,8 @@
 \title{create a tidysimloss object}
 \usage{
 crt_tidysimloss(policy_df, policy_required_field_map, frequency_alist,
-  severity_init_components_alist, severity_transit_components_alist,
-  severity_params_components_alist)
+  frequency_params_components_alist, severity_init_components_alist,
+  severity_transit_components_alist, severity_params_components_alist)
 }
 \arguments{
 \item{policy_df}{Polidy Data frame}

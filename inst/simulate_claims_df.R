@@ -1,3 +1,6 @@
+library(dplyr)
+library(purrr)
+
 data('Policy_df')
 policy_required_field_map <- c('PolicyNo' = 'Policy_Number',
                                'EffectiveDate' = 'Eff_dt',
@@ -13,10 +16,10 @@ frequency_alist <- alist(
 )
 
 frequency_params_components_alist <- alist(
-  a_lambda ~ rnorm(mean = 0.05, sd = 0.01),
+  a_lambda ~ rnorm(mean = 0.15, sd = 0.01),
   b1 ~ rnorm(mean = 0.1, sd = 0.02),
-  b2 ~ rnorm(mean = 0.05, sd = 0.015),
-  b3 ~ rnorm(mean = 0.025, sd = 0.01),
+  b2 ~ rnorm(mean = 0.075, sd = 0.015),
+  b3 ~ rnorm(mean = 0.05, sd = 0.01),
 )
 
 severity_init_components_alist <- alist(
@@ -29,7 +32,21 @@ severity_init_components_alist <- alist(
   rate = 1 / 180,
   options = seq(1, 365, 1)
 )
-severity_transit_components_alist
+
+severity_transit_components_alist <- alist(
+  closing ~ rbernoulli(p = inv_logit(-0.75 + b_close * age)),
+  reopen ~ rbernoulli(p = inv_logit(-8)),
+  no_change ~ rbernoulli(p = inv_logit(0.5)),
+  indemn_reserve_change ~ rlnorm(meanlog = mu_indemn_res, sdlog = sqrt(mu_indemn_res)),
+  expense_reserve_change ~ rlnorm(meanlog = mu_expense_res, sdlog = sqrt(mu_expense_res)),
+  percent_indemn_reserve_paid ~ rnorm(mean = 0.75, sd = 0.1),
+  percent_expense_reserve_paid ~ rnorm(mean = 0.75, sd = 0.1),
+  mu_indemn_res = dlnorm(age, meanlog = 3.5, sdlog = 1),
+  mu_expense_res = dlnorm(age, meanlog = 2.5, sdlog = 1),
+  increment_mth = 3
+)
+
 severity_params_components_alist
 
-expr_evaluation(df = Policy_df, expr_alist = frequency_alist)
+expr_evaluation(df = Policy_df, expr_alist = frequency_alist,
+                params_alist = frequency_params_components_alist) -> claims_df

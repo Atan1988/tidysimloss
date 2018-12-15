@@ -4,7 +4,7 @@
 \alias{expr_evaluation}
 \title{evalute parsed expressions}
 \usage{
-expr_evaluation(df, expr_alist, params_alist)
+expr_evaluation(df, expr_alist, params_alist = NULL)
 }
 \arguments{
 \item{df}{data frame}
