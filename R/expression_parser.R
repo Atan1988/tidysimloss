@@ -76,6 +76,7 @@ expr_evaluation <- function(df, expr_alist, params_alist = NULL) {
       expr_to_eval <- 'df %>% dplyr::mutate(!!!expr_var)'
 
       df <- rlang::eval_tidy(rlang::parse_expr(expr_to_eval), data = data_list)
+      df <- df[!colnames(df) %in% var]
       colnames(df)[length(colnames(df))] <- var
       data_list$df <- df
     }

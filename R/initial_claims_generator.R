@@ -31,8 +31,20 @@ crt_tidysimloss  <- function(policy_df, policy_required_field_map,
 
   ###simulate initial conditions
   claims_df_init <- claims_df %>%
-    expr_evaluation(df = ., expr_alist = severity_init_components_alist)
+    expr_evaluation(df = ., expr_alist = severity_init_components_alist) %>%
+    mutate(age = 0,
+           status = 'open',
+           total_indemn = ini_indemn_paid  + ini_indemn_reserve,
+           total_expense = ini_expense_paid + ini_expense_reserve
+    )
 
   ###
+  claims_tranist <- function() {
+   claims_df_init <<- claims_df_init %>%
+      expr_evaluation(df = ., expr_alist = severity_transit_components_alist) %>%
+      claims_trans()
 
+   return(claims_df_init)
+  }
+  return(claims_tranist)
 }
