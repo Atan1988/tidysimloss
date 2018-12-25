@@ -27,8 +27,8 @@ severity_init_components_alist <- alist(
   report_lag ~ rtrunc(FUN = 'exp', Att=0, rTrunc = 5 * 365, rate),
   ini_indemn_paid ~ rnorm(mean = 0, sd = 0), #rtrunc(FUN = 'norm', Att = 0, mean = 500, sd = 150),
   ini_expense_paid ~ rnorm(mean = 0, sd = 0), #rtrunc(FUN = 'norm', Att = 0, mean = 500, sd = 50),
-  ini_indemn_reserve ~ rlnorm(meanlog = 6.5, sdlog = 2),
-  ini_expense_reserve ~ rlnorm(meanlog = 5, sdlog = 2),
+  ini_indemn_reserve ~ rlnorm(meanlog = 5, sdlog = 2),
+  ini_expense_reserve ~ rlnorm(meanlog = 4, sdlog = 2),
   rate = 1 / 180,
   options = seq(1, 365, 1)
 )
@@ -41,10 +41,10 @@ severity_transit_components_alist <- alist(
   expense_reserve_change ~ rlnorm(meanlog = mu_expense_res, sdlog = sqrt(mu_expense_res)),
   percent_indemn_reserve_paid ~ runif(min = 0, max = 0.5),
   percent_expense_reserve_paid ~ runif(min = 0, max = 0.5),
-  mu_indemn_res = dlnorm(age, meanlog = 3.5, sdlog = 1) * 15,
-  mu_expense_res = dlnorm(age, meanlog = 2.5, sdlog = 1) * 10,
+  mu_indemn_res = dlnorm(age, meanlog = 3.5, sdlog = 1) * 35,
+  mu_expense_res = dlnorm(age, meanlog = 2.5, sdlog = 1) * 15,
   age = age + 3,
-  b_close = 0.05
+  b_close = 0.15
 )
 
 severity_params_components_alist
@@ -52,9 +52,10 @@ severity_params_components_alist
 expr_evaluation(df = Policy_df, expr_alist = frequency_alist,
                 params_alist = frequency_params_components_alist) -> claims_df
 
-sim_obj <- crt_tidysimloss(policy_df, policy_required_field_map,
+sim_obj <- crt_tidysimloss(policy_df = Policy_df, policy_required_field_map,
                           frequency_alist, frequency_params_components_alist,
                           severity_init_components_alist,
                           severity_transit_components_alist, severity_params_components_alist)
 
 sim_obj() %>% pull(total_inc) %>% sum()
+
