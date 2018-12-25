@@ -41,7 +41,7 @@ severity_transit_components_alist <- alist(
   expense_reserve_change ~ rlnorm(meanlog = mu_expense_res, sdlog = sqrt(mu_expense_res)),
   percent_indemn_reserve_paid ~ runif(min = 0, max = 0.5),
   percent_expense_reserve_paid ~ runif(min = 0, max = 0.5),
-  mu_indemn_res = dlnorm(age, meanlog = 3.5, sdlog = 1) * 35,
+  mu_indemn_res = dlnorm(age, meanlog = 3.5, sdlog = 1) * 30,
   mu_expense_res = dlnorm(age, meanlog = 2.5, sdlog = 1) * 15,
   age = age + 3,
   b_close = 0.15
@@ -57,5 +57,15 @@ sim_obj <- crt_tidysimloss(policy_df = Policy_df, policy_required_field_map,
                           severity_init_components_alist,
                           severity_transit_components_alist, severity_params_components_alist)
 
-sim_obj() %>% pull(total_inc) %>% sum()
+con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
+
+for (i in 1:25) {
+  sim_obj() %>% save_sim_result(con, tab = 'sim_res1', .)
+  print(i)
+}
+
+con %>% tbl('sim_res1')
+
+con %>% DBI::dbDisconnect()
+
 

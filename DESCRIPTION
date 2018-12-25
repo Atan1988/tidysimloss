@@ -19,7 +19,9 @@ Imports:
     dplyr,
     lubridate,
     rlang,
-    tidyr
+    tidyr,
+    RSQLite,
+    DBI
 Suggests: 
     knitr,
     rmarkdown
