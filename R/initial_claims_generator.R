@@ -24,7 +24,7 @@ crt_tidysimloss  <- function(policy_df, policy_required_field_map,
 
   claims_df <- policy_df_w_claims %>% dplyr::pull(NumberOfClaims) %>%
     purrr::map(~seq(1, ., 1)) %>%
-    dplyr::mutate(policy_df_w_claims, ClaimNo = .) %>% tidyr::unnest() %>%
+    dplyr::mutate(policy_df_w_claims, ClaimNo = .) %>% tidyr::unnest(cols = c(ClaimNo)) %>%
     dplyr::mutate(ClaimNo = paste(PolicyNo, ClaimNo, sep = '_')) %>%
     dplyr::select(PolicyNo, ClaimNo) %>%
     dplyr::left_join(Policy_df, by = policy_required_field_map[1])
@@ -32,7 +32,7 @@ crt_tidysimloss  <- function(policy_df, policy_required_field_map,
   ###simulate initial conditions
   claims_df_init <- claims_df %>%
     expr_evaluation(df = ., expr_alist = severity_init_components_alist) %>%
-    mutate(age = 0,
+    dplyr::mutate(age = 0,
            status = 'open',
            total_indemn = ini_indemn_paid  + ini_indemn_reserve,
            total_expense = ini_expense_paid + ini_expense_reserve

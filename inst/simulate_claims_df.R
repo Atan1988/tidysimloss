@@ -1,7 +1,12 @@
 library(dplyr)
 library(purrr)
+library(tidyr)
+library(ggplot2)
+library(tidysimloss)
 
 data('Policy_df')
+Policy_df %>% group_nest(Industries) %>% mutate(fit = map(data, ~fitdistrplus::fitdist(.$Exposures, 'norm'))) %>% pull(fit)
+
 policy_required_field_map <- c('PolicyNo' = 'Policy_Number',
                                'EffectiveDate' = 'Eff_dt',
                                'ExpirationDate' = 'Exp_dt',
@@ -35,7 +40,7 @@ severity_init_components_alist <- alist(
 
 severity_transit_components_alist <- alist(
   closing ~ rbernoulli(p = inv_logit(-1.25 + b_close * sqrt(age) )),
-  reopen ~ rbernoulli(p = inv_logit(-8)),
+  reopen ~ rbernoulli(p = inv_logit(-10)),
   no_change ~ rbernoulli(p = inv_logit(0)),
   indemn_reserve_change ~ rlnorm(meanlog = mu_indemn_res, sdlog = sqrt(mu_indemn_res)),
   expense_reserve_change ~ rlnorm(meanlog = mu_expense_res, sdlog = sqrt(mu_expense_res)),
@@ -47,7 +52,7 @@ severity_transit_components_alist <- alist(
   b_close = 0.15
 )
 
-severity_params_components_alist
+#severity_params_components_alist
 
 expr_evaluation(df = Policy_df, expr_alist = frequency_alist,
                 params_alist = frequency_params_components_alist) -> claims_df
@@ -59,12 +64,25 @@ sim_obj <- crt_tidysimloss(policy_df = Policy_df, policy_required_field_map,
 
 con <- DBI::dbConnect(RSQLite::SQLite(), ":memory:")
 
-for (i in 1:25) {
+for (i in 1:30) {
   sim_obj() %>% save_sim_result(con, tab = 'sim_res1', .)
   print(i)
 }
 
 con %>% tbl('sim_res1')
+con %>% tbl("sim_res1")  %>%
+  group_by(Eff_yr, age, status) %>% tally() %>% collect() %>%
+  ggplot(aes(x = age, y = n, fill = status)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~Eff_yr)
+
+con %>% tbl("sim_res1")  %>%
+  group_by(Eff_yr, age) %>%
+  summarise(mu_indem = sum(total_indemn),
+            mu_expense = sum(total_expense)) %>%
+  collect() %>%
+  tidyr::gather(key, val, dplyr::starts_with('mu')) %>%
+  ggplot(aes(x = age, y = val, fill = key)) + geom_bar(stat = 'identity') + facet_wrap(~Eff_yr)
 
 con %>% DBI::dbDisconnect()
 

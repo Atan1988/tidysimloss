@@ -29,7 +29,7 @@ claims_trans <- function(df) {
       ini_indemn_reserve = ini_indemn_reserve * (1 - percent_indemn_reserve_paid),
       ini_expense_reserve = ini_expense_reserve * (1 - percent_expense_reserve_paid),
       total_indemn = ini_indemn_paid  + ini_indemn_reserve,
-      total_expnese = ini_expense_paid + ini_expense_reserve,
-      total_inc = total_indemn + total_expnese
+      total_expense = ini_expense_paid + ini_expense_reserve,
+      total_inc = total_indemn + total_expense
     )
 }

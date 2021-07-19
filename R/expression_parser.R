@@ -39,7 +39,7 @@ eval_formula_exprs <- function(df, data_list, formula_exprs) {
 
     func <- RHS[[1]]
     args <- RHS[-1]
-    args <- ifelse(RHS_name[-1] == "", paste0(args, ' = ', args), paste0(RHS_name[-1], ' = ', args))
+    #args <- ifelse(RHS_name[-1] == "", paste0(args, ' = ', args), paste0(RHS_name[-1], ' = ', args))
     simulation_func <- paste0(func, "(n = n(), ",
                               paste( args , collapse = ", "), ")")
     expr_to_eval <- paste0('df %>% dplyr::mutate(', dep, " = ", simulation_func, ")")
@@ -63,6 +63,7 @@ expr_evaluation <- function(df, expr_alist, params_alist = NULL) {
 
   if (length(params_alist) > 0) {
     parsed_params_exprs <- expr_parser(params_alist)
+    data_list <- append( data_list,  parsed_params_exprs$scalar_exprs)
     df <- eval_formula_exprs(df, data_list, formula_exprs = parsed_params_exprs$formula_exprs)
     data_list$df <- df
   }
@@ -73,7 +74,7 @@ expr_evaluation <- function(df, expr_alist, params_alist = NULL) {
     for (i in 1:length(equation_exprs)) {
       expr_var <- equation_exprs[[i]]
       var <- names(equation_exprs)[i]
-      expr_to_eval <- 'df %>% dplyr::mutate(!!!expr_var)'
+      expr_to_eval <- 'df %>% dplyr::mutate(!!expr_var)'
 
       df <- rlang::eval_tidy(rlang::parse_expr(expr_to_eval), data = data_list)
       df <- df[!colnames(df) %in% var]
@@ -94,7 +95,7 @@ expr_evaluation <- function(df, expr_alist, params_alist = NULL) {
     func <- RHS[[1]]
     args <- RHS[-1]
     args <- ifelse(RHS_name[-1] == "", paste0(args, ' = ', args), paste0(RHS_name[-1], ' = ', args))
-    simulation_func <- paste0(func, "(n = n(), ",
+    simulation_func <- paste0(func, "(n = dplyr::n(), ",
                               paste( args , collapse = ", "), ")")
     expr_to_eval <- paste0('df %>% dplyr::mutate(', dep, " = ", simulation_func, ")")
     df <- rlang::eval_tidy(rlang::parse_expr(expr_to_eval), data = data_list)

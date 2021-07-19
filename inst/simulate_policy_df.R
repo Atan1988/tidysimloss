@@ -5,6 +5,26 @@ Exposures <- alist(Exposures ~ rnorm(mean, sd),
                    mean = a + b_Industries[Industries],
                    sd = 3e6, b_Industries = c(10e6, 25e6, 0), a = 50e6)
 
+
+policy_alist <- alist(
+  Exposures ~ rnorm(mean, sd),
+  mean = a + b_Industries[Industries],
+  sd = 3e6, b_Industries = c(10e6, 25e6, 0), a = 50e6
+)
+
+policy_parameters_alist <- alist(
+  Industries ~ rdiscrete(Industry_options),
+  Eff_yr ~ rdiscrete(Eff_yrs),
+  Industry_options = c('Energy', 'Construction', 'Healthcare'),
+  Eff_yrs = seq(2010, 2016, 1)
+)
+
+policy_df <- tibble::tibble(Policy_Number = seq(1, N_Policies, 1))
+policy_df <- policy_df %>%
+  ###evaluate number of claims
+  expr_evaluation(expr_alist = policy_alist,
+                  params_alist = policy_parameters_alist)
+
 Policy_sim  <- function(N_Policies, Eff_yrs, Industries, Exposures ) {
 
   Policy_df <- tibble::tibble(

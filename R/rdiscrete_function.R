@@ -4,5 +4,9 @@
 #' @param options options to be sampled
 #' @export
 rdiscrete  <- function(n, options) {
-  sample(x = options, size = n, replace = T)
+  p <- sample(x = options, size = n, replace = T)
+  if(is.character(options)) {
+    p <- factor(p, levels = options)
+  }
+  return(p)
 }
