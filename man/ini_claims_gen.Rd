@@ -5,9 +5,15 @@
 \alias{crt_tidysimloss}
 \title{generate initial claims states}
 \usage{
-crt_tidysimloss(policy_df, policy_required_field_map, frequency_alist,
-  frequency_params_components_alist, severity_init_components_alist,
-  severity_transit_components_alist, severity_params_components_alist)
+crt_tidysimloss(
+  policy_df,
+  policy_required_field_map,
+  frequency_alist,
+  frequency_params_components_alist,
+  severity_init_components_alist,
+  severity_transit_components_alist,
+  severity_params_components_alist
+)
 }
 \arguments{
 \item{policy_df}{Polidy Data frame}

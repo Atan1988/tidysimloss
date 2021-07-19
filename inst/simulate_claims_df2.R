@@ -10,10 +10,9 @@ policy_alist <- alist(
 )
 
 policy_parameters_alist <- alist(
-  Industries ~ rdiscrete(Industry_options),
-  Eff_yr ~ rdiscrete(Eff_yrs),
   ded ~ rdiscrete(ded_list),
   limit ~ rdiscrete(limit_list),
+  Industries ~ rdiscrete(Industry_options),
   Industry_options = c('Energy', 'Construction', 'Healthcare'),
   Eff_yrs = seq(2010, 2016, 1),
   sd = 10e6, b_Industries = c(10e6, 25e6, 0), a = 50e6,
@@ -21,19 +20,7 @@ policy_parameters_alist <- alist(
   limit_list = c(1e6, 2e6, 3e6)
 )
 
-N_Policies <- 1e3
-policy_df <- tibble::tibble(Policy_Number = seq(1, N_Policies, 1))
-policy_df <- policy_df %>%
-  ###evaluate number of claims
-  expr_evaluation(expr_alist = policy_alist,
-                  params_alist = policy_parameters_alist)
 
-policy_df %>% group_nest(Industries) %>% mutate(fit = map(data, ~fitdistrplus::fitdist(.$Exposures, 'norm'))) %>% pull(fit)
-
-policy_required_field_map <- c('PolicyNo' = 'Policy_Number',
-                               'EffectiveDate' = 'Eff_dt',
-                               'ExpirationDate' = 'Exp_dt',
-                               'NumberOfClaims' = 'total_claims')
 frequency_alist <- alist(
   total_claims ~ rpois(lambda),
   lambda = a_lambda * Exposures^b_lambda_industry,
@@ -51,12 +38,7 @@ frequency_params_components_alist <- alist(
 )
 
 severity_alist <- alist(
-  #occurrence_lag ~ rdiscrete(options),
-  #report_lag ~ rtrunc(FUN = 'exp', Att=0, rTrunc = 5 * 365, rate),
-  #ini_indemn_paid ~ rnorm(mean = 0, sd = 0), #rtrunc(FUN = 'norm', Att = 0, mean = 500, sd = 150),
-  #ini_expense_paid ~ rnorm(mean = 0, sd = 0), #rtrunc(FUN = 'norm', Att = 0, mean = 500, sd = 50),
   loss ~ rlnorm(meanlog = mu, sdlog = 2),
-  #ini_expense_reserve ~ rlnorm(meanlog = 4, sdlog = 2),
   mu = a_mu + b_mu,
   b_mu = case_when(Industries == 'Healthcare' ~ b3
                    , Industries == 'Construction' ~ b2
@@ -70,14 +52,26 @@ severity_params_alist <- alist(
   b3 ~ rnorm(mean = -1, sd = 0.00)
 )
 
-#claims_key <- c('PolicyNo', 'NumberOfClaims')
 
-policy_df_w_claims <- Policy_df %>%
+N_Policies <- 1e4
+full_data <- base_simulator(N_Policies,
+                  policy_exprs = policy_alist, policy_parameters = policy_parameters_alist,
+                  frequency_exprs = frequency_alist, frequnecy_parameters = frequency_params_components_alist,
+                  severity_exprs = severity_alist, severity_paramters = severity_params_alist)
+
+policy_df <- tibble::tibble(Policy_Number = seq(1, N_Policies, 1))
+policy_df <- policy_df %>%
+  ###evaluate number of claims
+  expr_evaluation(expr_alist = policy_alist,
+                  params_alist = policy_parameters_alist)
+
+policy_df %>% group_nest(Industries) %>% mutate(fit = map(data, ~fitdistrplus::fitdist(.$Exposures, 'norm'))) %>% pull(fit)
+
+policy_df_w_claims <- policy_df %>%
   ###evaluate number of claims
   expr_evaluation(expr_alist = frequency_alist,
                   params_alist = frequency_params_components_alist) %>%
   dplyr::select_at(dplyr::vars(Policy_Number, total_claims))
-#colnames(policy_df_w_claims) <- claims_key
 
 policy_df_w_claims <- policy_df_w_claims %>%
   dplyr::filter(total_claims > 0)
@@ -86,7 +80,7 @@ claims_df <- policy_df_w_claims %>% dplyr::pull(total_claims ) %>%
   purrr::map(~seq(1, ., 1)) %>%
   dplyr::mutate(policy_df_w_claims, ClaimNo = .) %>% tidyr::unnest(cols = c(ClaimNo)) %>%
   dplyr::mutate(ClaimNo = paste(Policy_Number, ClaimNo, sep = '_')) %>%
-  dplyr::left_join(Policy_df)  %>%
+  dplyr::left_join(policy_df)  %>%
   expr_evaluation(expr_alist = severity_alist,
                   params_alist = severity_params_alist ) %>%
   dplyr::filter(loss > ded) %>%
@@ -95,7 +89,7 @@ claims_df <- policy_df_w_claims %>% dplyr::pull(total_claims ) %>%
     loss = pmin(loss, limit)
   )
 
-frq_data_net <- Policy_df %>%
+frq_data_net <- policy_df %>%
   dplyr::left_join(
     claims_df %>% dplyr::group_by(Policy_Number) %>%
           dplyr::summarise(claimcount = dplyr::n())
