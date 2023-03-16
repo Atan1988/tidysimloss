@@ -40,7 +40,7 @@ eval_formula_exprs <- function(df, data_list, formula_exprs) {
     func <- RHS[[1]]
     args <- RHS[-1]
     #args <- ifelse(RHS_name[-1] == "", paste0(args, ' = ', args), paste0(RHS_name[-1], ' = ', args))
-    simulation_func <- paste0(func, "(n = n(), ",
+    simulation_func <- paste0(func, "(n = dplyr::n(), ",
                               paste( args , collapse = ", "), ")")
     expr_to_eval <- paste0('df %>% dplyr::mutate(', dep, " = ", simulation_func, ")")
     df <- rlang::eval_tidy(rlang::parse_expr(expr_to_eval), data = data_list)
