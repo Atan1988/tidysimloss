@@ -33,37 +33,39 @@ base_simulator <- function(N_Policies, policy_exprs, policy_parameters, frequenc
     purrr::map(~seq(1, ., 1)) %>%
     dplyr::mutate(policy_df_w_claims, ClaimNo = .) %>% tidyr::unnest(cols = c(ClaimNo)) %>%
     dplyr::mutate(ClaimNo = paste(Policy_Number, ClaimNo, sep = '_')) %>%
-    dplyr::left_join(policy_df)  %>%
+    dplyr::left_join(policy_df, by = 'Policy_Number')  %>%
     expr_evaluation(expr_alist = severity_alist,
-                    params_alist = severity_params_alist ) %>%
-    dplyr::filter(!!loss_var > ded) %>%
-    dplyr::mutate(
-      lim_exceed = ifelse(!!loss_var > limit, 1, 0),
-      !!loss_var := pmin(!!loss_var, limit)
-    )
+                    params_alist = severity_params_alist ) #%>%
+    # dplyr::filter(!!loss_var > ded) %>%
+    # dplyr::mutate(
+    #   lim_exceed = ifelse(!!loss_var > limit, 1, 0),
+    #   !!loss_var := pmin(!!loss_var, limit)
+    # )
 
   frq_data_net <- policy_df %>%
     dplyr::left_join(
-      claims_df %>% dplyr::group_by(Policy_Number) %>%
-        dplyr::summarise(claimcount = dplyr::n())
+      claims_df %>% dplyr::mutate(claimcount = 1) %>%
+        dplyr::group_by(Policy_Number) %>%
+        dplyr::summarise_at(dplyr::vars(claimcount, dplyr::all_of(loss_var)), sum),
+      by = 'Policy_Number'
     ) %>%
     dplyr::mutate(claimcount = dplyr::coalesce(claimcount, 0),
                   freq2 = 1)
 
   claims_df1 <- claims_df %>%
-    dplyr::select(
-      dplyr::one_of(colnames(frq_data_net)), !!loss_var, limit, lim_exceed
-    ) %>%
+    # dplyr::select(
+    #   dplyr::one_of(colnames(frq_data_net)), !!loss_var, limit, lim_exceed
+    # ) %>%
     dplyr::mutate(freq2 = 0)
 
   full_data <- dplyr::bind_rows(
     frq_data_net, claims_df1
   ) %>%
-    dplyr::mutate(
-      !!loss_var := ifelse(freq2 == 1, ded + 0.1, !!loss_var),
-    ) %>%
+    # dplyr::mutate(
+    #   !!loss_var := ifelse(freq2 == 1, ded + 0.1, !!loss_var),
+    # ) %>%
     dplyr::mutate_at(
-      dplyr::vars(claimcount, lim_exceed), ~dplyr::coalesce(., 0)
+      dplyr::vars(claimcount, dplyr::all_of(loss_var)), ~dplyr::coalesce(., 0)
     )
   return(full_data)
 }
