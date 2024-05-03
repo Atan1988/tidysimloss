@@ -14,9 +14,10 @@ policy_alist <- alist(
 policy_parameters_alist <- alist(
   ded ~ rdiscrete(ded_list),
   limit ~ rdiscrete(limit_list),
+  Effdt ~ rdiscrete(Effdt_list),
   Industries ~ rdiscrete(Industry_options),
   Industry_options = c('Energy', 'Construction', 'Healthcare'),
-  Eff_yrs = seq(2010, 2016, 1),
+  Effdt_list =seq(lubridate::as_date('2010-01-01'), lubridate::as_date('2016-12-31'), 1),
   sd = 10e6, b_Industries = c(10e6, 25e6, 0), a = 50e6,
   ded_list = c(0, 2500, 5000, 25000, 50000, 100000),
   limit_list = c(1e6, 2e6, 3e6)
@@ -70,10 +71,12 @@ full_data <- base_simulator(N_Policies,
 full_data1 <- full_data %>% dplyr::filter(freq2 == 0) %>%
   dplyr::mutate(
     scale = ifelse(Industries == "Energy", 20, 40),
-    shape = 1.2
+    shape = 1.2,
+    DOL = Effdt + occurrence_lag,
+    DateReported = DOL + report_lag
   )
-alpha0 <- 0.5
-alphas <- c(0.2, 0.4, 0.25, 0.1, 0.05) * alpha0
+# alpha0 <- 0.5
+# alphas <- c(0.2, 0.4, 0.25, 0.1, 0.05) * alpha0
 
 trans <- full_data1 %>%
   purrrlyr::by_row(
@@ -89,5 +92,11 @@ trans <- full_data1 %>%
   )
 
 
-trans %>% tidyr::unnest(cols = '.out') %>% View()
+trans %>% tidyr::unnest(cols = '.out') %>%
+  dplyr::mutate(trans = round(cdf_p * loss, 0)) %>%
+  dplyr::filter(trans > 0) %>%
+  dplyr::arrange(
+    ClaimNo, q
+  ) %>%
+  View()
 
