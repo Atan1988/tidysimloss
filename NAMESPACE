@@ -2,6 +2,7 @@
 
 export("%>%")
 export(base_simulator)
+export(cdf_proportion)
 export(claims_trans)
 export(crt_tidysimloss)
 export(dtrunc)
